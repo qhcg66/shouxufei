@@ -1,0 +1,60 @@
+name: 自动更新保证金与合约数据
+
+on:
+  schedule:
+    # GitHub Actions 使用 UTC；北京 17:30（交易所结算参数发布后）
+    - cron: "30 9 * * 1-5"
+    # 北京 21:00，覆盖夜盘前调整
+    - cron: "0 13 * * 1-5"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: auto-update-margins
+  cancel-in-progress: false
+
+jobs:
+  update-margins:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: 检出仓库
+        uses: actions/checkout@v4
+
+      - name: 安装 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: 抓取交易所官方结算参数（保证金/手续费）
+        run: node _tools/update-margins.js
+
+      - name: 抓取全部合约快照（合约月份与成交量）
+        run: node _tools/fetch-contracts.js
+        continue-on-error: true
+
+      - name: 抓取九期网交易所标准保证金（补全大商所）
+        run: node _tools/fetch-9qihuo.js
+        continue-on-error: true
+
+      - name: 检查数据是否变化
+        id: check
+        run: |
+          if git diff --quiet -- js/margins-data.js js/contracts-snapshot.js js/margins-9qihuo.js; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "数据无变化"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            echo "检测到数据变化"
+          fi
+
+      - name: 自动提交并推送
+        if: steps.check.outputs.changed == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add js/margins-data.js js/contracts-snapshot.js js/margins-9qihuo.js
+          git commit -m "自动更新保证金与合约数据 $(date -u +'%Y-%m-%d %H:%M UTC')"
+          git push
