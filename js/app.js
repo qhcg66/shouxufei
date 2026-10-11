@@ -11,6 +11,113 @@ function fmtVol(x){ return Number(x||0).toLocaleString("zh-CN"); }
 function fmtNum(x, d){ return Number(x||0).toFixed(d==null?2:d); }
 function trunc1(x){ return Math.trunc(x*10)/10; }
 function varietyKey(code){ return String(code).replace(/\d.*$/,"").toLowerCase(); }
+function contractYM(code){
+var m = String(code).toLowerCase().match(/^([a-z]+)(\d{3,4})$/);
+if(!m) return null;
+var digits = m[2], yy, mm;
+if(digits.length === 4){
+yy = 2000 + Number(digits.slice(0,2));
+mm = Number(digits.slice(2,4));
+} else {
+mm = Number(digits.slice(1,3));
+var curY = new Date().getFullYear();
+yy = Math.floor(curY/10)*10 + Number(digits.slice(0,1));
+if(yy < curY - 1){ yy += 10; }
+}
+if(!mm) return null;
+return { y: yy, m: mm, ym: yy*12 + mm };
+}
+function monthsToDelivery(code){
+var d = contractYM(code);
+if(!d) return null;
+var now = new Date();
+return d.ym - (now.getFullYear()*12 + (now.getMonth()+1));
+}
+function liveSourceFresh(exchId){
+if(typeof MARGIN_LIVE_SOURCES === "undefined") return false;
+var label = {shfe:"上期所",ine:"能源中心",czce:"郑商所",gfex:"广期所",cffex:"中金所",dce:"大商所"}[exchId];
+if(!label) return false;
+for(var i=0;i<MARGIN_LIVE_SOURCES.length;i++){
+var s = String(MARGIN_LIVE_SOURCES[i]);
+if(s.indexOf(label) !== 0) continue;
+var m = s.match(/(\d{8})/);
+if(m){
+var y = Number(m[1].slice(0,4)), mo = Number(m[1].slice(4,6)), dd = Number(m[1].slice(6,8));
+var t = new Date(y, mo-1, dd).getTime();
+return (Date.now() - t) <= 7*24*3600*1000;
+}
+if(/latest|已接入/.test(s)) return true;
+return false;
+}
+return false;
+}
+function marginOf(c){
+var code = String(c.code||"").toLowerCase();
+var live = (typeof MARGIN_LIVE !== "undefined") ? MARGIN_LIVE[code] : null;
+var livePct = (live && live.m) ? live.m : null;
+if(livePct === null && typeof MARGIN_9QIHUO !== "undefined" && MARGIN_9QIHUO[code] && MARGIN_9QIHUO[code].m){
+return { pct: MARGIN_9QIHUO[code].m, tier: "交易所标准", live: true, near: false, src9: true };
+}
+if(livePct === null && typeof MARGIN_MANUAL !== "undefined" && MARGIN_MANUAL[code]){
+return { pct: MARGIN_MANUAL[code], tier: "手工录入", live: false, near: false };
+}
+var tiers = (typeof MARGIN_TIERS !== "undefined") ? MARGIN_TIERS[varietyKey(code)] : null;
+var d = monthsToDelivery(code);
+var base = Number(c.margin) || 0;
+var tierPct = null, tierName = "标准";
+if(tiers && d !== null){
+if(d <= 0){ tierPct = tiers[2] != null ? tiers[2] : base; tierName = "交割月"; }
+else if(d === 1){ tierPct = tiers[1] != null ? tiers[1] : base; tierName = "交割月前月"; }
+else { tierPct = tiers[0] != null ? tiers[0] : base; tierName = "一般月份"; }
+}
+if(livePct !== null && tierPct !== null){
+if(liveSourceFresh(c.exch)) return { pct: livePct, tier: "交易所公布", live: true, near: false };
+return livePct >= tierPct
+? { pct: livePct, tier: "交易所公布", live: true, near: false }
+: { pct: tierPct, tier: tierName, live: false, near: false };
+}
+if(livePct !== null){ return { pct: livePct, tier: "交易所公布", live: true, near: false }; }
+if(tierPct !== null){ return { pct: tierPct, tier: tierName, live: false, near: false }; }
+var near = (d !== null && d <= 1);
+return { pct: base, tier: near ? "临近交割月" : "标准", live: false, near: near };
+}
+function varietyBaseMargin(key){
+var tiers = (typeof MARGIN_TIERS !== "undefined") ? MARGIN_TIERS[key] : null;
+if(tiers && tiers[0] != null) return tiers[0];
+var min = null;
+function scan(map){
+if(!map) return;
+Object.keys(map).forEach(function(code){
+if(varietyKey(code) !== key) return;
+var m = map[code] && map[code].m;
+if(m != null && (min === null || m < min)) min = m;
+});
+}
+if(typeof MARGIN_LIVE !== "undefined") scan(MARGIN_LIVE);
+if(typeof MARGIN_9QIHUO !== "undefined") scan(MARGIN_9QIHUO);
+return min;
+}
+function nqMainCode(key){
+if(typeof MARGIN_9QIHUO === "undefined") return null;
+var found = null;
+Object.keys(MARGIN_9QIHUO).forEach(function(code){
+var v = MARGIN_9QIHUO[code];
+if(v && v.main && varietyKey(code) === key) found = code;
+});
+return found;
+}
+function marginMark(c, pct){
+var key = varietyKey(c.code);
+var base = varietyBaseMargin(key);
+if(base === null || pct == null) return "";
+if(pct <= base + 0.001) return "";
+var d = monthsToDelivery(c.code);
+if(d === null) return "";
+if(d <= 1){
+return '<span class="mg-up" title="保证金 '+trim0(pct)+'%，高于该品种一般月份 '+trim0(base)+'%，已按交割月标准提高">↑</span>';
+}
+return '<span class="mg-warn" title="保证金 '+trim0(pct)+'%，高于该品种一般月份 '+trim0(base)+'%，临近交割月请留意交易所临时调整">⚠</span>';
+}
 function fmtNet1(x){
 var t = trunc1(x);
 if(x<0 && t===0){ return "-0"; }
@@ -23,7 +130,7 @@ var val = c[kind]||0;
 if(c.feeType==="fixed"){ return val * (1 + add/100); }
 return price * c.mult * val / 10000 * (1 + add/100);
 }
-function marginAmount(c, price, addPct){ return price * c.mult * (c.margin + (addPct||0)) / 100; }
+function marginAmount(c, price, addPct){ return price * c.mult * (marginOf(c).pct + (addPct||0)) / 100; }
 function openCloseFee(c, price, addPct){ return feeAmount(c,price,"open",addPct) + feeAmount(c,price,"closeToday",addPct); }
 function netPerTick(c, price, addPct){ return c.tickValue - openCloseFee(c,price,addPct); }
 function feeCell(c, kind, addPct){
@@ -42,7 +149,9 @@ userPriceEdited: false,
 expanded: {},
 calcCode: null,
 globalMode: false,
-gMarginAdd: 0, gFeeAdd: 0, gTicks: 10
+gMarginAdd: 0, gFeeAdd: 0, gTicks: 10,
+sortMode: "fixed",
+volumeOrder: null
 };
 function applyFeeOverride(c){
 var key = varietyKey(c.code);
@@ -65,36 +174,87 @@ CONTRACTS.forEach(function(c){
 var key = varietyKey(c.code);
 if(!varietyMap[key]){ varietyMap[key] = c; }
 });
+var varietyOrder = {};
+Object.keys(varietyMap).forEach(function(k, i){ varietyOrder[k] = i; });
 var allContracts = null;
 var allMap = {};
 var allByVariety = {};
 var comboSource = [];
 function lookup(code){ return contractMap[code] || allMap[code] || null; }
-function fetchExchangeContracts(ex){
-var perPage = 100;
-function page(pn){
-var url = "https://push2delay.eastmoney.com/api/qt/clist/get?pn="+pn+"&pz="+perPage+"&po=1&np=1&fltt=2&invt=2&fid=f5&fs=m:"+ex.market+"&fields=f12,f14,f2,f5";
+var ALL_CACHE_KEY = "qht_all_contracts_v1";
+var ALL_CACHE_TTL = 6 * 60 * 60 * 1000;
+var EM_HOSTS = ["push2delay.eastmoney.com", "push2.eastmoney.com", "82.push2delay.eastmoney.com"];
+function sleepMs(ms){ return new Promise(function(r){ setTimeout(r, ms); }); }
+function loadAllCache(){
+try{
+var raw = localStorage.getItem(ALL_CACHE_KEY);
+if(!raw) return null;
+var obj = JSON.parse(raw);
+if(!obj || !obj.t || (Date.now()-obj.t) > ALL_CACHE_TTL) return null;
+return Array.isArray(obj.data) ? obj.data : null;
+}catch(e){ return null; }
+}
+function saveAllCache(data){
+try{ localStorage.setItem(ALL_CACHE_KEY, JSON.stringify({t:Date.now(), data:data})); }catch(e){}
+}
+function fetchEastPage(ex, pn, attempt){
+var host = EM_HOSTS[(pn + (attempt||0)) % EM_HOSTS.length];
+var url = "https://"+host+"/api/qt/clist/get?pn="+pn+"&pz=100&po=1&np=1&fltt=2&invt=2&fid=f5&fs=m:"+ex.market+"&fields=f12,f14,f2,f5";
 return fetch(url, {cache:"no-store"}).then(function(r){ return r.json(); }).then(function(j){
-if(!j || !j.data || !j.data.diff){ return {total:0, list:[]}; }
-return {total:j.data.total, list:j.data.diff};
+if(!j || !j.data || !j.data.diff || !j.data.diff.length) throw new Error("empty");
+return {total:j.data.total || j.data.diff.length, list:j.data.diff};
+}).catch(function(err){
+if((attempt||0) >= 2) return {total:0, list:[], failed:true};
+return sleepMs(450 * ((attempt||0)+1)).then(function(){ return fetchEastPage(ex, pn, (attempt||0)+1); });
 });
 }
-return page(1).then(function(first){
-var tasks = [];
-var pages = Math.ceil((first.total||0)/perPage);
-for(var p=2;p<=pages;p++){ tasks.push(page(p)); }
-return Promise.all(tasks).then(function(rest){
-var diff = first.list.slice();
-rest.forEach(function(r){ diff = diff.concat(r.list); });
-return diff;
+function fetchExchangeContracts(ex){
+return fetchEastPage(ex, 1, 0).then(function(first){
+if(!first.list.length) return [];
+var out = [], seen = {};
+first.list.forEach(function(d){ var c=String(d.f12||""); if(c && !seen[c]){ seen[c]=1; out.push(d); } });
+var pages = Math.min(Math.ceil((first.total||first.list.length)/100), 8);
+var chain = Promise.resolve();
+for(var p=2;p<=pages;p++){
+(function(pn){
+chain = chain.then(function(){
+return fetchEastPage(ex, pn, 0).then(function(r){
+r.list.forEach(function(d){ var c=String(d.f12||""); if(c && !seen[c]){ seen[c]=1; out.push(d); } });
+}).then(function(){ return sleepMs(180); });
 });
-}).catch(function(){ return []; });
+})(p);
+}
+return chain.then(function(){ return out; });
+});
+}
+function snapshotRaw(){
+if(typeof CONTRACTS_SNAPSHOT === "undefined" || !CONTRACTS_SNAPSHOT || !CONTRACTS_SNAPSHOT.list) return [];
+var src = CONTRACTS_SNAPSHOT.list, out = [];
+Object.keys(src).forEach(function(code){
+var it = src[code] || {};
+out.push({ f12: code, f14: it.n, f2: it.p, f5: it.v });
+});
+return out;
 }
 function fetchAllContracts(){
-return Promise.all(EXCHANGES.map(fetchExchangeContracts)).then(function(arrays){
 var raw = [];
-arrays.forEach(function(a){ raw = raw.concat(a); });
+return Promise.all(EXCHANGES.map(function(ex){
+return fetchExchangeContracts(ex).then(function(list){
+if(list && list.length) raw = raw.concat(list);
+}).catch(function(){});
+})).then(function(){
+if(raw.length){ saveAllCache(raw); }
+else {
+var cached = loadAllCache();
+if(cached && cached.length) raw = cached;
+else raw = snapshotRaw();
+}
+if(!raw.length) return [];
 return mapAllContracts(raw);
+}).catch(function(){
+var cached = loadAllCache();
+if(cached && cached.length) return mapAllContracts(cached);
+return mapAllContracts(snapshotRaw());
 });
 }
 function mapAllContracts(raw){
@@ -120,6 +280,10 @@ if(!(key in volByVariety) || c.volume > volByVariety[key]){ volByVariety[key] = 
 list.forEach(function(c){
 var key = varietyKey(c.code);
 if(c.volume>0 && c.volume===volByVariety[key]){ c.isMain = true; c.remark = "主力"; }
+else {
+var nq = (typeof MARGIN_9QIHUO !== "undefined") ? MARGIN_9QIHUO[c.code.toLowerCase()] : null;
+if(nq && nq.main){ c.isMain = true; c.remark = "主力"; }
+}
 applyFeeOverride(c);
 });
 return list;
@@ -132,17 +296,90 @@ allMap[c.code.toLowerCase()] = c;
 var key = varietyKey(c.code);
 (allByVariety[key] = allByVariety[key] || []).push(c);
 });
+fillMissingFromLive();
 Object.keys(allByVariety).forEach(function(k){
 allByVariety[k].sort(function(a,b){ return (b.volume||0)-(a.volume||0); });
 });
 buildComboSource();
 }
+function fillMissingFromLive(){
+var srcs = [];
+if(typeof MARGIN_LIVE !== "undefined") srcs.push(MARGIN_LIVE);
+if(typeof MARGIN_9QIHUO !== "undefined") srcs.push(MARGIN_9QIHUO);
+if(!srcs.length) return;
+Object.keys(varietyMap).forEach(function(key){
+if(allByVariety[key] && allByVariety[key].length) return;
+var base = varietyMap[key];
+srcs.forEach(function(src){
+Object.keys(src).forEach(function(code){
+if(varietyKey(code) !== key) return;
+if(allMap[code.toLowerCase()]) return;
+var ym = String(code).replace(/^[A-Za-z]+/,"");
+var meta = src[code] || {};
+var c = Object.assign({}, base, {
+code: code, name: String(base.name).replace(/\d+.*$/,"") + ym,
+price: base.price, volume: 0,
+isMain: !!meta.main, remark: meta.main ? "主力" : ""
+});
+applyFeeOverride(c);
+allContracts.push(c);
+allMap[code.toLowerCase()] = c;
+(allByVariety[key] = allByVariety[key] || []).push(c);
+});
+});
+});
+Object.keys(varietyMap).forEach(function(key){
+var list = allByVariety[key] || [];
+if(!list.length) return;
+var hasVolume = list.some(function(c){ return (c.volume||0) > 0; });
+var nqCode = nqMainCode(key);
+if(!hasVolume && nqCode){
+var hit = null;
+list.forEach(function(c){ if(!hit && c.code.toLowerCase() === nqCode) hit = c; });
+if(hit){
+list.forEach(function(c){
+if(c !== hit){ c.isMain = false; if(c.remark === "主力") c.remark = ""; }
+});
+hit.isMain = true; hit.remark = "主力";
+return;
+}
+}
+if(list.some(function(c){ return c.isMain; })) return;
+var mainCode = String(varietyMap[key].code || "").toLowerCase();
+var found = null;
+list.forEach(function(c){ if(!found && c.code.toLowerCase() === mainCode) found = c; });
+if(!found) found = list[0];
+if(found){ found.isMain = true; found.remark = "主力"; }
+});
+Object.keys(varietyMap).forEach(function(key){
+if(allByVariety[key] && allByVariety[key].length) return;
+var base = varietyMap[key];
+var c = Object.assign({}, base, {isMain:true, remark:"主力"});
+applyFeeOverride(c);
+allContracts.push(c);
+allMap[c.code.toLowerCase()] = c;
+(allByVariety[key] = allByVariety[key] || []).push(c);
+});
+}
 function prefetchAll(){
+var cached = loadAllCache();
+if(cached && cached.length){
+indexAll(mapAllContracts(cached));
+} else if(typeof CONTRACTS_SNAPSHOT !== "undefined" && CONTRACTS_SNAPSHOT && CONTRACTS_SNAPSHOT.list && Object.keys(CONTRACTS_SNAPSHOT.list).length){
+indexAll(mapAllContracts(snapshotRaw()));
+} else {
+indexAll([]);
+}
+rebuildMainFromLive();
+renderTables();
 fetchAllContracts().then(function(list){
+if(list && list.length){
 indexAll(list);
 rebuildMainFromLive();
+renderTables();
+}
 scheduleMainRefresh();
-}).catch(function(){});
+}).catch(function(){ scheduleMainRefresh(); });
 }
 function rebuildMainFromLive(){
 if(!allContracts) return;
@@ -152,7 +389,11 @@ var list = allByVariety[key]||[];
 var live = list[0] || null;
 var curCode = varietyMap[key].code.toLowerCase();
 if(live && live.volume===0 && allMap[curCode]){ live = allMap[curCode]; }
-if(!live || live.volume===0){ live = Object.assign({}, varietyMap[key]); }
+if(!live || live.volume===0){
+var nqCode = nqMainCode(key);
+if(nqCode && allMap[nqCode.toLowerCase()]) live = allMap[nqCode.toLowerCase()];
+else live = Object.assign({}, varietyMap[key]);
+}
 var c = live ? Object.assign({}, live) : Object.assign({}, varietyMap[key]);
 applyFeeOverride(c);
 newList.push(c);
@@ -182,7 +423,7 @@ indexAll(list);
 rebuildMainFromLive();
 scheduleMainRefresh();
 }).catch(scheduleMainRefresh);
-}, 15*60*1000);
+}, 20*60*1000);
 }
 function matchSearch(c){
 var q = state.search.trim().toLowerCase();
@@ -225,7 +466,8 @@ else if(net===0 || netT==="0"){ netShow = '<span class="zero">'+netT+"</span>"; 
 else { netShow = '<span class="profit">'+netT+"</span>"; }
 var key = varietyKey(c.code);
 var badge = c.isMain ? '<span class="main-badge">主力</span>' : (c.remark==="次主力" ? '<span class="sub-badge">次主力</span>' : "");
-var marginTxt = trim0(c.margin+gm)+"%";
+var mo = marginOf(c);
+var marginTxt = trim0(mo.pct+gm)+"%" + marginMark(c, mo.pct);
 var marginAmt = marginAmount(c, c.price, gm);
 var roiShow = '<span class="muted">—</span>';
 var roiMobile = "";
@@ -261,13 +503,29 @@ toggleCell+
 "<td data-label='每跳毛利'><span class='profit'>"+c.tickValue.toFixed(1)+"</span></td>"+
 "<td data-label='每跳净利'><span class='net-cell' data-code='"+c.code+"'>"+netShow+"</span></td>"+
 "<td data-label='回报率%'>"+roiShow+"</td>"+
-(withExpand ? "" : "<td data-label='备注'>"+esc(c.remark||"")+"</td>")+
+(withExpand ? "" : "<td data-label='备注'>"+esc(c.remark==="主力" ? "" : (c.remark||""))+"</td>")+
 "</tr>";
+}
+var retryStamp = {};
+function retryVariety(key){
+var now = Date.now();
+if(retryStamp[key] && (now-retryStamp[key]) < 10*60*1000) return;
+retryStamp[key] = now;
+fetchAllContracts().then(function(list){
+if(list && list.length){
+indexAll(list);
+rebuildMainFromLive();
+renderTables();
+}
+}).catch(function(){});
 }
 function expansionContent(key){
 if(!allContracts){ return '<td colspan="15" class="empty-tip">正在加载全部合约…</td>'; }
 var list = allByVariety[key] || [];
-if(!list.length){ return '<td colspan="15" class="empty-tip">暂无可显示合约</td>'; }
+if(!list.length){
+retryVariety(key);
+return '<td colspan="15" class="empty-tip">正在重新获取该品种合约…如仍为空，请稍后重新展开</td>';
+}
 return '<td colspan="15"><div class="collapse-bar"><button class="collapse-btn" data-key="'+key+'">▲ 收起该品种全部合约</button></div><div class="sub-wrap"><table class="sub-table"><thead><tr>'+headCells(false)+"</tr></thead><tbody>"+
 list.map(function(c){ return rowHtml(c,false); }).join("")+
 "</tbody></table></div></td>";
@@ -289,7 +547,17 @@ EXCHANGES.forEach(function(ex){
 var list = filtered.filter(function(c){ return c.exch===ex.id; });
 if(state.exch!=="all" && state.exch!==ex.id) return;
 if(state.exch==="all" && list.length===0) return;
-list.sort(function(a,b){ return (b.volume||0)-(a.volume||0); });
+if(state.sortMode === "volume" && state.volumeOrder){
+list.sort(function(a,b){
+var ka = state.volumeOrder[varietyKey(a.code)], kb = state.volumeOrder[varietyKey(b.code)];
+return (ka==null?9999:ka) - (kb==null?9999:kb);
+});
+} else {
+list.sort(function(a,b){
+var ka = varietyOrder[varietyKey(a.code)], kb = varietyOrder[varietyKey(b.code)];
+return (ka==null?9999:ka) - (kb==null?9999:kb);
+});
+}
 var head = '<div class="ex-title"><span>'+ex.name+'</span><span class="count">'+list.length+' 个品种 · 单位：手续费 元/手 或 万分之X · 保证金 %</span></div>';
 var table = '<div class="table-wrap"><table class="main-table">'+
 "<thead><tr>"+headCells(true)+"</tr></thead><tbody>"+
@@ -335,6 +603,10 @@ var s = ex.market+"."+c.code;
 if(!seen[s]){ seen[s]=1; list.push(s); }
 }
 contracts.forEach(add);
+Object.keys(varietyMap).forEach(function(key){
+var top = (allByVariety[key]||[]).slice(0,2);
+top.forEach(add);
+});
 Object.keys(state.expanded).forEach(function(key){
 (allByVariety[key]||[]).forEach(add);
 });
@@ -373,6 +645,28 @@ return tryHost(idx+1);
 });
 }
 return tryHost(0);
+}
+function syncMainContracts(){
+if(!allContracts || !allContracts.length) return false;
+var changed = false;
+Object.keys(varietyMap).forEach(function(key){
+var list = allByVariety[key] || [];
+if(list.length < 2) return;
+var best = null;
+list.forEach(function(c){ if(best===null || (c.volume||0) > (best.volume||0)) best = c; });
+if(!best || !(best.volume>0)) return;
+for(var i=0;i<contracts.length;i++){
+if(varietyKey(contracts[i].code) !== key) continue;
+var same = contracts[i].code.toLowerCase() === best.code.toLowerCase();
+var hadMain = !!contracts[i].isMain;
+if(!same || !hadMain){
+contracts[i] = Object.assign({}, best, {isMain:true, remark:"主力"});
+changed = true;
+}
+break;
+}
+});
+return changed;
 }
 function applyQuotes(res){
 var arr = res && res.list ? res.list : (res && res.length!==undefined ? res : []);
@@ -426,6 +720,11 @@ if(cc){
 var prev = Number($("calcPrice").value);
 if(prev!==cc.price){ $("calcPrice").value = cc.price; recalc(); }
 }
+}
+if(syncMainContracts()){
+contractMap = {};
+contracts.forEach(function(c){ contractMap[c.code.toLowerCase()] = c; });
+renderTables();
 }
 refreshQuoteUI(true, state.lastSource);
 }
@@ -610,7 +909,7 @@ state.gFeeAdd = Number($("calcFeeAdd").value)||0;
 state.gTicks = Math.max(1, Math.floor(Number($("calcTicks").value)||10));
 renderTables();
 }
-$("calcInfo").textContent = "合约乘数："+c.mult+" · 最小变动单位："+trim0(c.tickValue/c.mult)+" · 交易所标准保证金："+trim0(c.margin)+"% · 手续费标准："+feeStd+
+$("calcInfo").textContent = "合约乘数："+c.mult+" · 最小变动单位："+trim0(c.tickValue/c.mult)+" · 交易所标准保证金："+trim0(marginOf(c).pct)+"%（"+marginOf(c).tier+"） · 手续费标准："+feeStd+
 " · 每跳盈亏："+c.tickValue+"元"+(marginAdd||feeAdd ? "（已含加收：保证金+"+trim0(marginAdd)+"%，手续费+"+trim0(feeAdd)+"%）" : "");
 }
 function exportExcel(mode){
@@ -647,7 +946,7 @@ var rows = [];
 rows.push(["国内期货手续费·保证金一览表（数据仅供参考，不构成投资建议）"]);
 rows.push(["期货开户优惠：手续费可降至交易所标准附近 ｜ 微信：qhcg66 ｜ 网址：https://qhcg66.github.io/shouxufei/"]);
 rows.push([]);
-rows.push(["交易所","合约名称","合约代码","现价","成交量","保证金/元","买开保证金%","卖开保证金%","开仓手续费","平昨手续费","平今手续费","开+平/元","每跳毛利","每跳净利","回报率(平今)%","回报率(平昨)%","备注"]);
+rows.push(["交易所","合约名称","合约代码","现价","成交量","保证金/元","买开保证金%","卖开保证金%","开仓手续费","平昨手续费","平今手续费","开+平/元","每跳毛利","每跳净利","回报率(平今)%","回报率(平昨)%","保证金档位","备注"]);
 list.forEach(function(c){
 var ex = EXCHANGES.filter(function(e){ return e.id===c.exch; })[0];
 var marginAmt = marginAmount(c, c.price, gm);
@@ -657,10 +956,10 @@ var prevF = feeAmount(c, c.price, "closePrev", gf);
 var roiToday = marginAmt>0 ? (c.tickValue*gt - openF - todayF)/marginAmt*100 : 0;
 var roiPrev = marginAmt>0 ? (c.tickValue*gt - openF - prevF)/marginAmt*100 : 0;
 rows.push([
-ex.name, c.name, c.code, c.price, c.volume, fmtNum(marginAmt,1), trim0(c.margin+gm)+"%", trim0(c.margin+gm)+"%",
+ex.name, c.name, c.code, c.price, c.volume, fmtNum(marginAmt,1), trim0(marginOf(c).pct+gm)+"%", trim0(marginOf(c).pct+gm)+"%",
 feeText(c,"open",gf), feeText(c,"closePrev",gf), feeText(c,"closeToday",gf),
 fmtNum(openCloseFee(c,c.price,gf),2), c.tickValue, trunc1(netPerTick(c,c.price,gf)),
-fmtNum(roiToday,2)+"%", fmtNum(roiPrev,2)+"%", c.remark||""
+fmtNum(roiToday,2)+"%", fmtNum(roiPrev,2)+"%", marginOf(c).tier, c.remark||""
 ]);
 });
 var csv = "\uFEFF" + rows.map(function(r){
@@ -700,7 +999,8 @@ html += row("代码", "<b>"+esc(c.code)+"</b>");
 html += row("交易所", esc(ex ? ex.name : c.exch));
 html += row("现价", '<span class="price-cell" data-code="'+c.code+'">'+fmtPrice(c.price)+"</span>");
 html += row("成交量", '<span class="vol-cell" data-code="'+c.code+'">'+fmtVol(c.volume)+"</span>");
-html += row("保证金比例", trim0(c.margin)+"%");
+var mo = marginOf(c);
+html += row("保证金比例", trim0(mo.pct)+"% <span style=\"font-size:12px;color:#7a8699;\">("+esc(mo.tier)+")</span>");
 html += row("保证金/元", '<span class="margin-cell" data-code="'+c.code+'">'+fmtNum(marginAmount(c,c.price,0),1)+"</span>");
 html += row("开仓手续费", feeText(c,"open"));
 html += row("平昨手续费", feeText(c,"closePrev"));
@@ -713,7 +1013,6 @@ $("dtBody").innerHTML = html;
 state.detailCode = c.code;
 $("detailModal").classList.add("show");
 }
-/* 计算器展开/收起 */
 function expandCalc(open){
 var sec = $("calcSection");
 if(!sec) return;
@@ -722,7 +1021,6 @@ sec.classList.toggle("open", want);
 var ar = $("calcArrow");
 if(ar) ar.textContent = want ? "▾" : "▸";
 }
-/* ---------- 事件绑定 ---------- */
 function bind(){
 renderTabs();
 renderTables();
@@ -730,7 +1028,24 @@ initCombo();
 buildComboSource();
 $("feeSyncTime").textContent = META.feeSyncTime;
 $("quoteSyncTime").textContent = META.quoteSyncTime;
-/* 行点击：展开按钮 ↔ 计算器选择 */
+var mst = $("marginSyncTime");
+if(mst){
+if(typeof MARGIN_LIVE_SOURCES !== "undefined" && MARGIN_LIVE_SOURCES.length){
+var srcParts = MARGIN_LIVE_SOURCES.map(function(s){
+s = String(s);
+var m = s.match(/(\d{4})(\d{2})(\d{2})/);
+var head = s.split(/\s+/)[0].replace("上海国际能源交易中心","能源中心");
+if(m) return head + m[2] + "-" + m[3];
+if(/latest/.test(s)) return head + "最新";
+if(/已接入/.test(s)) return head + "已接入";
+return head;
+});
+mst.textContent = srcParts.join(" · ");
+mst.title = MARGIN_LIVE_SOURCES.join("\n");
+} else {
+mst.textContent = (typeof MARGIN_LIVE_DATE !== "undefined" ? MARGIN_LIVE_DATE : "—") + "（交易所结算参数）";
+}
+}
 $("main").addEventListener("click", function(e){
 var cb = e.target.closest(".collapse-btn");
 if(cb){
@@ -796,6 +1111,31 @@ if(!t) return;
 state.exch = t.getAttribute("data-exch");
 renderTabs(); renderTables();
 });
+var sortBtn = $("btnSort");
+if(sortBtn){
+sortBtn.addEventListener("click", function(){
+if(state.sortMode === "volume"){
+state.sortMode = "fixed"; state.volumeOrder = null;
+sortBtn.textContent = "📊 按成交量排序";
+sortBtn.title = "按当前成交量从大到小排一次序，之后自动刷新不再跳动";
+renderTables();
+} else {
+var order = {}, idx = 0;
+EXCHANGES.forEach(function(ex){
+var list = contracts.filter(function(c){ return c.exch===ex.id; });
+list.sort(function(a,b){ return (b.volume||0)-(a.volume||0); });
+list.forEach(function(c){
+var k = varietyKey(c.code);
+if(order[k] === undefined){ order[k] = idx++; }
+});
+});
+state.volumeOrder = order; state.sortMode = "volume";
+sortBtn.textContent = "📌 恢复固定顺序";
+sortBtn.title = "点击恢复按品种的固定顺序";
+renderTables();
+}
+});
+}
 $("searchInput").addEventListener("input", function(){ state.search = this.value; renderTables(); });
 $("btnRefresh").addEventListener("click", function(){
 var b = this; b.disabled = true; b.textContent = "刷新中…";
@@ -823,7 +1163,6 @@ document.querySelectorAll("[data-close]").forEach(function(el){
 el.addEventListener("click", function(){ $(el.getAttribute("data-close")).classList.remove("show"); });
 });
 $("feeModal").addEventListener("click", function(e){ if(e.target===this) this.classList.remove("show"); });
-/* 开户广告 */
 var btnGroup = $("btnOpenGroup");
 if(btnGroup){ btnGroup.addEventListener("click", function(){ $("groupModal").classList.add("show"); }); }
 var adOpeners = ["btnFloatAd","btnOpenAd"];
@@ -849,7 +1188,6 @@ if(id==="calcTicks" || id==="calcPoints"){ syncTicksPoints(id); }
 recalc();
 });
 });
-/* 默认选中第一个合约 */
 selectCombo(contracts[0].code);
 }
 document.addEventListener("DOMContentLoaded", function(){

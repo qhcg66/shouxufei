@@ -35,8 +35,48 @@
 │   ├── app.js          # 主页面逻辑
 │   └── options.js      # 期权页逻辑
 ├── start.bat           # 一键打开主页面
+├── _tools/update-margins.js            # 交易所结算参数抓取脚本（自动更新用）
+├── .github/workflows/update-margins.yml # GitHub Actions 每日自动更新任务
 └── README.md
 ```
+
+
+## 保证金数据怎么保持最新
+
+期货保证金会随合约**临近交割月逐级提高**（如螺纹钢 7% → 10% → 15%），交易所也可能临时调整。本站直接读取**交易所官方"结算参数"**，因此是**逐合约的真实保证金**：
+
+| 交易所 | 数据来源 | 状态 |
+|---|---|---|
+| 上期所 SHFE | `/data/tradedata/future/dailydata/jsYYYYMMDD.dat` | ✅ 自动 |
+| 能源中心 INE | `/data/tradedata/future/dailydata/jsYYYYMMDD.dat` | ✅ 自动 |
+| 郑商所 CZCE | `FutureDataClearParams.txt`（结算参数，含手续费） | ✅ 自动 |
+| 广期所 GFEX | `interfacesWebTtQueryTradPara/loadDayList` | ✅ 自动 |
+| 中金所 CFFEX | `/sj/jscs/YYYYMM/DD/YYYYMMDD_1.csv` | ✅ 自动 |
+| 大商所 DCE | 九期网（交易所标准逐合约，自动抓取） | ✅ 自动 |
+
+页面标记：<b>●</b> 交易所公布值 / 九期网交易所标准 ｜ <b>↑</b> 按交割月阶梯提高（用于数据未覆盖的合约） ｜ <b>⚠</b> 临近交割月需核实
+
+### 保证金数据自动更新（无需手动操作）
+
+本项目已内置 GitHub Actions 定时任务 `.github/workflows/update-margins.yml`，每个交易日自动抓取交易所官方“结算参数”并提交更新：
+
+- 北京时间 **17:30**（交易所结算参数发布后）
+- 北京时间 **21:00**（覆盖夜盘前的临时调整）
+- 只有数据发生变化才会提交，GitHub Pages 会自动重新发布，访客刷新即可看到最新保证金
+
+**首次使用需要在 GitHub 开启写权限**：仓库 → Settings → Actions → General → Workflow permissions → 选择 **Read and write permissions** → Save。
+
+想立刻更新时：仓库 → Actions → 左侧“自动更新保证金数据” → Run workflow。
+
+> 某家交易所抓取失败（网络波动、反爬）时，脚本会**保留上一次成功的数据**并标注“沿用”，不会清空。GitHub 定时任务在仓库连续 60 天没有任何提交或操作后会被自动暂停，收到邮件提醒后到 Actions 页面点一次 Run workflow 即可恢复。
+
+本地手动更新（在项目根目录执行）：
+
+```
+node _tools/update-margins.js
+```
+
+抓取上述五家交易所最新结算参数 → 重新生成 `js/margins-data.js`（含 600+ 合约的逐合约保证金）。
 
 ## 如何更新数据
 

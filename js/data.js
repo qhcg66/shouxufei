@@ -1,4 +1,31 @@
-﻿var CONTRACTS = [
+﻿var MARGIN_TIERS = {
+rb: [7, 10, 15],
+hc: [7, 10, 15],
+sp: [7, 10, 15],
+ss: [7, 10, 15],
+op: [7, 10, 15],
+ad: [7, 10, 15],
+wr: [9, 10, 15],
+cu: [9, 11, 15],
+al: [9, 11, 15],
+zn: [9, 11, 15],
+pb: [9, 11, 15],
+ao: [9, 11, 15],
+ni: [10, 12, 15],
+sn: [13, 14, 15],
+ru: [9, 10, 15],
+br: [12, 12, 15],
+bu: [12, 12, 15],
+fu: [16, 19, 20],
+au: [16, 16, 16],
+ag: [16, 22, 22],
+sc: [16, 18, 20],
+lu: [16, 19, 20],
+nr: [9, 10, 15],
+bc: [9, 11, 15],
+ec: [17, 22, 22]
+};
+var CONTRACTS = [
 {name:"沪银2610", code:"ag2610", exch:"shfe", price:15633, volume:395476, margin:22, mult:15, tickValue:15, feeType:"rate", open:0.5, closePrev:0.5, closeToday:0.5, isMain:true, remark:"主力"},
 {name:"螺纹钢2610", code:"rb2610", exch:"shfe", price:3030, volume:385256, margin:7, mult:10, tickValue:10, feeType:"rate", open:1, closePrev:1, closeToday:1, isMain:true, remark:"主力"},
 {name:"燃料油2611", code:"fu2611", exch:"shfe", price:3902, volume:276615, margin:16, mult:10, tickValue:10, feeType:"rate", open:0.1, closePrev:0.1, closeToday:0, isMain:true, remark:"主力"},

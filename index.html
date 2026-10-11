@@ -1,10 +1,10 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>国内期货手续费与保证金实时计算 - 期货手续费一览表</title>
-<link rel="stylesheet" href="css/style.css?v=20260824h">
+<link rel="stylesheet" href="css/style.css?v=20261012k">
 </head>
 <body>
 
@@ -14,6 +14,7 @@
     <div class="meta">
       <span><span class="dot" id="quoteDot"></span><span id="quoteStatus">正在连接实时行情…</span></span>
       <span>手续费数据同步：<b id="feeSyncTime"></b></span>
+      <span>保证金数据：<b id="marginSyncTime"></b></span>
       <span>行情更新时间：<b id="quoteSyncTime"></b></span>
       <span>共 <b id="totalCount"></b> 个合约</span>
     </div>
@@ -22,7 +23,7 @@
 
 <div class="promo">
   <div class="wrap">
-    <span>🔥 <b>期货开户优惠</b>：手续费可申请降至交易所标准</span>
+    <span>🔥 <b>期货开户优惠</b>：手续费可申请降至交易所标准附近</span>
     <button class="wechat" data-copy-wechat="qhcg66" id="btnCopyWechat">复制微信</button>
     <span class="btn-more group" id="btnOpenGroup">👥 加入交流群</span>
     <span class="btn-more" id="btnOpenAd">查看开户详情 →</span>
@@ -42,6 +43,7 @@
       <button class="btn" id="btnCalcMethod" title="手续费收取方式说明">📖 手续费说明</button>
       <a class="btn" href="options.html">🎫 期权手续费</a>
       <button class="btn" id="btnRefresh" title="立即刷新行情">🔄 刷新行情</button>
+      <button class="btn" id="btnSort" title="按当前成交量从大到小排一次序，之后自动刷新不再跳动">📊 按成交量排序</button>
       <div class="dropdown-wrap">
         <button class="btn primary" id="btnExcel">⬇ 下载 Excel ▾</button>
         <div class="dropdown" id="excelMenu">
@@ -178,11 +180,16 @@
     </div>
     <p>⚠️ <b>平今仓</b>（当天开、当天平）部分合约有优惠甚至免费（表中红色标注）；部分合约平今仓费率高于开仓。表中“开+平/元”按开仓 + 平今仓计算。</p>
     <p>⚠️ 表中为<b>交易所标准</b>费率，期货公司通常在此基础上加收（如手续费 +X%、保证金 +X%），可通过上方计算器模拟加收后的费用。</p>
+    <p>📈 <b>保证金会随合约临近交割月逐级提高</b>：交易所对"一般月份 / 交割月前第一月 / 交割月"分别规定不同比例（例如螺纹钢 7% / 10% / 15%）。本页<b>按每个合约的月份自动套用对应档位</b>，临近交割月的合约会显示 <span class="mg-up">↑</span> 或 <span class="mg-live">●</span> 标记，鼠标悬停可看说明。<b>上期所、能源中心、郑商所、广期所、中金所</b>均直接使用交易所"结算参数"公布的<b>逐合约真实保证金</b>（标 ●，可用更新脚本随时刷新到最新交易日）；大商所官网存在反爬，其逐合约保证金采用九期网（9qihuo.com）的交易所标准数据自动补全</p>
   </div>
 </div>
 
-<script src="js/data.js?v=20260824h"></script>
-<script src="js/app.js?v=20260824h"></script>
+<script src="js/margins-data.js?v=20261012k"></script>
+<script src="js/margins-9qihuo.js?v=20261012k"></script>
+<script src="js/margin-manual.js?v=20261012k"></script>
+<script src="js/contracts-snapshot.js?v=20261012k"></script>
+<script src="js/data.js?v=20261012k"></script>
+<script src="js/app.js?v=20261012k"></script>
 </body>
 </html>
 

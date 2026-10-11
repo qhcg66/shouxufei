@@ -421,3 +421,8 @@ footer a{ color:#cfd8ea; }
 /* ================= 加入交流群按钮 ================= */
 .promo .btn-more.group{ background:#FFD54F; color:#5d3a00; border-radius:5px; padding:5px 12px; font-weight:700; text-decoration:none; }
 .promo .btn-more.group:hover{ background:#FFC107; color:#3d2600; }
+
+/* ================= 保证金档位标记 ================= */
+.mg-live{ color:#0a9d5c; font-size:11px; margin-left:1px; cursor:help; }
+.mg-up{ color:#e67e22; font-size:11px; font-weight:700; margin-left:1px; cursor:help; }
+.mg-warn{ color:#d33a2c; font-size:11px; font-weight:700; margin-left:1px; cursor:help; }
