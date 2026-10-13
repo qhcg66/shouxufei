@@ -1,6 +1,6 @@
 /* 九期网：交易所标准保证金/手续费（逐合约，脚本自动生成，勿手改） */
-/* 数据日期：2026-10-12；来源：https://www.9qihuo.com/qihuoshouxufei */
-var MARGIN_9QIHUO_DATE = "2026-10-12";
+/* 数据日期：2026-10-13；来源：https://www.9qihuo.com/qihuoshouxufei */
+var MARGIN_9QIHUO_DATE = "2026-10-13";
 var MARGIN_9QIHUO = {
   "a2611": {m: 7, e: "dce", main: 1, fee: 2, feeType: "fixed", feeToday: 2},
   "a2701": {m: 7, e: "dce", fee: 2, feeType: "fixed", feeToday: 2},
@@ -84,8 +84,8 @@ var MARGIN_9QIHUO = {
   "b2708": {m: 7, e: "dce", fee: 1, feeType: "fixed", feeToday: 1},
   "b2709": {m: 7, e: "dce", fee: 1, feeType: "fixed", feeToday: 1},
   "bb2611": {m: 8, e: "dce", fee: 0.5, feeType: "rate", feeToday: 0.5},
-  "bb2701": {m: 8, e: "dce", fee: 0.5, feeType: "rate", feeToday: 0.5},
-  "bb2703": {m: 8, e: "dce", main: 1, fee: 0.5, feeType: "rate", feeToday: 0.5},
+  "bb2701": {m: 8, e: "dce", main: 1, fee: 0.5, feeType: "rate", feeToday: 0.5},
+  "bb2703": {m: 8, e: "dce", fee: 0.5, feeType: "rate", feeToday: 0.5},
   "bb2705": {m: 8, e: "dce", fee: 0.5, feeType: "rate", feeToday: 0.5},
   "bc2610": {m: 20, e: "ine", fee: 0.1, feeType: "rate", feeToday: 0},
   "bc2611": {m: 11, e: "ine", main: 1, fee: 0.1, feeType: "rate", feeToday: 0},
@@ -357,8 +357,8 @@ var MARGIN_9QIHUO = {
   "lg2705": {m: 6, e: "dce", fee: 0.3, feeType: "rate", feeToday: 0.3},
   "lg2707": {m: 6, e: "dce", fee: 0.3, feeType: "rate", feeToday: 0.3},
   "lg2709": {m: 6, e: "dce", fee: 0.3, feeType: "rate", feeToday: 0.3},
-  "lh2611": {m: 8, e: "dce", main: 1, fee: 2, feeType: "rate", feePrev: 1, feeToday: 2},
-  "lh2701": {m: 8, e: "dce", fee: 2, feeType: "rate", feePrev: 1, feeToday: 2},
+  "lh2611": {m: 8, e: "dce", fee: 2, feeType: "rate", feePrev: 1, feeToday: 2},
+  "lh2701": {m: 8, e: "dce", main: 1, fee: 2, feeType: "rate", feePrev: 1, feeToday: 2},
   "lh2703": {m: 8, e: "dce", fee: 2, feeType: "rate", feePrev: 1, feeToday: 2},
   "lh2705": {m: 8, e: "dce", fee: 2, feeType: "rate", feePrev: 1, feeToday: 2},
   "lh2707": {m: 8, e: "dce", fee: 2, feeType: "rate", feePrev: 1, feeToday: 2},
@@ -374,6 +374,7 @@ var MARGIN_9QIHUO = {
   "lu2707": {m: 16, e: "ine", fee: 0.1, feeType: "rate", feeToday: 0.1},
   "lu2708": {m: 16, e: "ine", fee: 0.1, feeType: "rate", feeToday: 0.1},
   "lu2709": {m: 16, e: "ine", fee: 0.1, feeType: "rate", feeToday: 0.1},
+  "lu2710": {m: 16, e: "ine", fee: 0.1, feeType: "rate", feeToday: 0.1},
   "m2611": {m: 7, e: "dce", fee: 1.5, feeType: "fixed", feeToday: 1.5},
   "m2612": {m: 7, e: "dce", fee: 1.5, feeType: "fixed", feeToday: 1.5},
   "m2701": {m: 7, e: "dce", main: 1, fee: 1.5, feeType: "fixed", feeToday: 1.5},
@@ -698,9 +699,9 @@ var MARGIN_9QIHUO = {
   "sn2708": {m: 13, e: "shfe", fee: 3, feeType: "fixed", feeToday: 3},
   "sn2709": {m: 13, e: "shfe", fee: 3, feeType: "fixed", feeToday: 3},
   "sp2610": {m: 20, e: "shfe", fee: 0.2, feeType: "rate", feeToday: 0},
-  "sp2611": {m: 10, e: "shfe", main: 1, fee: 0.2, feeType: "rate", feeToday: 0},
+  "sp2611": {m: 10, e: "shfe", fee: 0.2, feeType: "rate", feeToday: 0},
   "sp2612": {m: 7, e: "shfe", fee: 0.2, feeType: "rate", feeToday: 0},
-  "sp2701": {m: 7, e: "shfe", fee: 0.2, feeType: "rate", feeToday: 0},
+  "sp2701": {m: 7, e: "shfe", main: 1, fee: 0.2, feeType: "rate", feeToday: 0},
   "sp2702": {m: 7, e: "shfe", fee: 0.2, feeType: "rate", feeToday: 0},
   "sp2703": {m: 7, e: "shfe", fee: 0.2, feeType: "rate", feeToday: 0},
   "sp2704": {m: 7, e: "shfe", fee: 0.2, feeType: "rate", feeToday: 0},
