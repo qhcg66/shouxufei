@@ -1,9 +1,9 @@
 /* 九期网：交易所标准保证金/手续费（逐合约，脚本自动生成，勿手改） */
-/* 数据日期：2026-10-13；来源：https://www.9qihuo.com/qihuoshouxufei */
-var MARGIN_9QIHUO_DATE = "2026-10-13";
+/* 数据日期：2026-10-14；来源：https://www.9qihuo.com/qihuoshouxufei */
+var MARGIN_9QIHUO_DATE = "2026-10-14";
 var MARGIN_9QIHUO = {
-  "a2611": {m: 7, e: "dce", main: 1, fee: 2, feeType: "fixed", feeToday: 2},
-  "a2701": {m: 7, e: "dce", fee: 2, feeType: "fixed", feeToday: 2},
+  "a2611": {m: 7, e: "dce", fee: 2, feeType: "fixed", feeToday: 2},
+  "a2701": {m: 7, e: "dce", main: 1, fee: 2, feeType: "fixed", feeToday: 2},
   "a2703": {m: 7, e: "dce", fee: 2, feeType: "fixed", feeToday: 2},
   "a2705": {m: 7, e: "dce", fee: 2, feeType: "fixed", feeToday: 2},
   "a2707": {m: 7, e: "dce", fee: 2, feeType: "fixed", feeToday: 2},
@@ -466,8 +466,8 @@ var MARGIN_9QIHUO = {
   "pd2706": {m: 14, e: "gfex", fee: 1, feeType: "rate", feeToday: 0},
   "pd2708": {m: 14, e: "gfex", fee: 1, feeType: "rate", feeToday: 0},
   "pf610": {m: 20, e: "czce", fee: 2, feeType: "fixed", feeToday: 0},
-  "pf611": {m: 7, e: "czce", main: 1, fee: 2, feeType: "fixed", feeToday: 0},
-  "pf612": {m: 7, e: "czce", fee: 2, feeType: "fixed", feeToday: 0},
+  "pf611": {m: 7, e: "czce", fee: 2, feeType: "fixed", feeToday: 0},
+  "pf612": {m: 7, e: "czce", main: 1, fee: 2, feeType: "fixed", feeToday: 0},
   "pf701": {m: 7, e: "czce", fee: 2, feeType: "fixed", feeToday: 0},
   "pf702": {m: 7, e: "czce", fee: 2, feeType: "fixed", feeToday: 0},
   "pf703": {m: 7, e: "czce", fee: 2, feeType: "fixed", feeToday: 0},
@@ -490,8 +490,8 @@ var MARGIN_9QIHUO = {
   "pg2708": {m: 7, e: "dce", fee: 6, feeType: "fixed", feeToday: 6},
   "pg2709": {m: 7, e: "dce", fee: 6, feeType: "fixed", feeToday: 6},
   "pk610": {m: 20, e: "czce", fee: 2, feeType: "fixed", feeToday: 2},
-  "pk611": {m: 7, e: "czce", main: 1, fee: 2, feeType: "fixed", feeToday: 2},
-  "pk612": {m: 7, e: "czce", fee: 2, feeType: "fixed", feeToday: 2},
+  "pk611": {m: 7, e: "czce", fee: 2, feeType: "fixed", feeToday: 2},
+  "pk612": {m: 7, e: "czce", main: 1, fee: 2, feeType: "fixed", feeToday: 2},
   "pk701": {m: 7, e: "czce", fee: 2, feeType: "fixed", feeToday: 2},
   "pk703": {m: 7, e: "czce", fee: 2, feeType: "fixed", feeToday: 2},
   "pk704": {m: 7, e: "czce", fee: 2, feeType: "fixed", feeToday: 2},
