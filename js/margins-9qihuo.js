@@ -752,6 +752,7 @@ var MARGIN_9QIHUO = {
   "ta707": {m: 7, e: "czce", fee: 3, feeType: "fixed", feeToday: 0},
   "ta708": {m: 7, e: "czce", fee: 3, feeType: "fixed", feeToday: 0},
   "ta709": {m: 7, e: "czce", fee: 3, feeType: "fixed", feeToday: 0},
+  "ta710": {m: 7, e: "czce", fee: 3, feeType: "fixed", feeToday: 0},
   "tf2612": {m: 1.2, e: "cffex", main: 1, fee: 3, feeType: "fixed", feeToday: 0},
   "tf2703": {m: 1.2, e: "cffex", fee: 3, feeType: "fixed", feeToday: 0},
   "tf2706": {m: 1.2, e: "cffex", fee: 3, feeType: "fixed", feeToday: 0},
