@@ -1,6 +1,6 @@
 /* 九期网：交易所标准保证金/手续费（逐合约，脚本自动生成，勿手改） */
-/* 数据日期：2026-10-23；来源：https://www.9qihuo.com/qihuoshouxufei */
-var MARGIN_9QIHUO_DATE = "2026-10-23";
+/* 数据日期：2026-10-26；来源：https://www.9qihuo.com/qihuoshouxufei */
+var MARGIN_9QIHUO_DATE = "2026-10-26";
 var MARGIN_9QIHUO = {
   "a2611": {m: 7, e: "dce", fee: 2, feeType: "fixed", feeToday: 2},
   "a2701": {m: 7, e: "dce", main: 1, fee: 2, feeType: "fixed", feeToday: 2},
@@ -387,9 +387,9 @@ var MARGIN_9QIHUO = {
   "m2708": {m: 7, e: "dce", fee: 1.5, feeType: "fixed", feeToday: 1.5},
   "m2709": {m: 7, e: "dce", fee: 1.5, feeType: "fixed", feeToday: 1.5},
   "ma611": {m: 10, e: "czce", fee: 1, feeType: "rate", feeToday: 1},
-  "ma612": {m: 7, e: "czce", fee: 1, feeType: "rate", feeToday: 1},
-  "ma701": {m: 7, e: "czce", main: 1, fee: 1, feeType: "rate", feeToday: 1},
-  "ma702": {m: 7, e: "czce", fee: 1, feeType: "rate", feeToday: 1},
+  "ma612": {m: 11, e: "czce", fee: 1, feeType: "rate", feeToday: 1},
+  "ma701": {m: 11, e: "czce", main: 1, fee: 1, feeType: "rate", feeToday: 1},
+  "ma702": {m: 11, e: "czce", fee: 1, feeType: "rate", feeToday: 1},
   "ma703": {m: 7, e: "czce", fee: 1, feeType: "rate", feeToday: 1},
   "ma704": {m: 7, e: "czce", fee: 1, feeType: "rate", feeToday: 1},
   "ma705": {m: 7, e: "czce", fee: 1, feeType: "rate", feeToday: 1},
@@ -555,8 +555,8 @@ var MARGIN_9QIHUO = {
   "pt2706": {m: 14, e: "gfex", fee: 1, feeType: "rate", feeToday: 0},
   "pt2708": {m: 14, e: "gfex", fee: 1, feeType: "rate", feeToday: 0},
   "px611": {m: 15, e: "czce", fee: 1, feeType: "rate", feeToday: 0},
-  "px612": {m: 7, e: "czce", main: 1, fee: 1, feeType: "rate", feeToday: 0},
-  "px701": {m: 7, e: "czce", fee: 1, feeType: "rate", feeToday: 0},
+  "px612": {m: 9, e: "czce", main: 1, fee: 1, feeType: "rate", feeToday: 0},
+  "px701": {m: 9, e: "czce", fee: 1, feeType: "rate", feeToday: 0},
   "px702": {m: 7, e: "czce", fee: 1, feeType: "rate", feeToday: 0},
   "px703": {m: 7, e: "czce", fee: 1, feeType: "rate", feeToday: 0},
   "px704": {m: 7, e: "czce", fee: 1, feeType: "rate", feeToday: 0},
@@ -661,7 +661,7 @@ var MARGIN_9QIHUO = {
   "sf707": {m: 7, e: "czce", fee: 2, feeType: "fixed", feeToday: 0},
   "sf708": {m: 7, e: "czce", fee: 2, feeType: "fixed", feeToday: 0},
   "sf709": {m: 7, e: "czce", fee: 2, feeType: "fixed", feeToday: 0},
-  "sh611": {m: 10, e: "czce", fee: 1, feeType: "rate", feeToday: 0},
+  "sh611": {m: 12, e: "czce", fee: 1, feeType: "rate", feeToday: 0},
   "sh612": {m: 8, e: "czce", fee: 1, feeType: "rate", feeToday: 0},
   "sh701": {m: 8, e: "czce", main: 1, fee: 1, feeType: "rate", feeToday: 0},
   "sh702": {m: 8, e: "czce", fee: 1, feeType: "rate", feeToday: 0},
@@ -742,8 +742,8 @@ var MARGIN_9QIHUO = {
   "t2703": {m: 2, e: "cffex", fee: 3, feeType: "fixed", feeToday: 0},
   "t2706": {m: 2, e: "cffex", fee: 3, feeType: "fixed", feeToday: 0},
   "ta611": {m: 10, e: "czce", fee: 3, feeType: "fixed", feeToday: 0},
-  "ta612": {m: 7, e: "czce", fee: 3, feeType: "fixed", feeToday: 0},
-  "ta701": {m: 7, e: "czce", main: 1, fee: 3, feeType: "fixed", feeToday: 0},
+  "ta612": {m: 9, e: "czce", fee: 3, feeType: "fixed", feeToday: 0},
+  "ta701": {m: 9, e: "czce", main: 1, fee: 3, feeType: "fixed", feeToday: 0},
   "ta702": {m: 7, e: "czce", fee: 3, feeType: "fixed", feeToday: 0},
   "ta703": {m: 7, e: "czce", fee: 3, feeType: "fixed", feeToday: 0},
   "ta704": {m: 7, e: "czce", fee: 3, feeType: "fixed", feeToday: 0},
