@@ -1,12 +1,12 @@
 /* ============================================================
  * 逐合约真实保证金（交易所官方结算参数，脚本自动生成，勿手改）
- * 数据来源：上期所 20261106；能源中心 20261106；郑商所 20261106；广期所 latest；中金所 20261019
+ * 数据来源：上期所 20261109；能源中心 20261109；郑商所 20261109；广期所 latest；中金所 20261019
  * 由 update-margins.js 自动生成（GitHub Actions 每日定时更新）。
  * 字段：m=投机保证金%, h=套保保证金%, fee=手续费, feeType=fixed|rate, feeToday=平今手续费
  * 说明：标注“沿用”的交易所表示本次抓取失败，保留上一次成功数据；大商所由九期网数据补全。
  * ============================================================ */
-var MARGIN_LIVE_DATE = "2026-11-06";
-var MARGIN_LIVE_SOURCES = ["上期所 20261106","能源中心 20261106","郑商所 20261106","广期所 latest","中金所 20261019"];
+var MARGIN_LIVE_DATE = "2026-11-09";
+var MARGIN_LIVE_SOURCES = ["上期所 20261109","能源中心 20261109","郑商所 20261109","广期所 latest","中金所 20261019"];
 var MARGIN_LIVE = {
   "ad2611": {m: 15, h: 15},
   "ad2612": {m: 10, h: 10},
@@ -622,7 +622,6 @@ var MARGIN_LIVE = {
   "wr2708": {m: 12, h: 11},
   "wr2709": {m: 12, h: 11},
   "wr2710": {m: 12, h: 11},
-  "zc611": {m: 50, fee: 150, feeType: "fixed", feeToday: 150},
   "zc612": {m: 50, fee: 150, feeType: "fixed", feeToday: 150},
   "zc701": {m: 50, fee: 150, feeType: "fixed", feeToday: 150},
   "zc702": {m: 50, fee: 150, feeType: "fixed", feeToday: 150},
@@ -634,6 +633,7 @@ var MARGIN_LIVE = {
   "zc708": {m: 50, fee: 150, feeType: "fixed", feeToday: 150},
   "zc709": {m: 50, fee: 150, feeType: "fixed", feeToday: 150},
   "zc710": {m: 50, fee: 150, feeType: "fixed", feeToday: 150},
+  "zc711": {m: 50, fee: 150, feeType: "fixed", feeToday: 150},
   "zn2611": {m: 15, h: 15},
   "zn2612": {m: 11, h: 10},
   "zn2701": {m: 11, h: 10},
