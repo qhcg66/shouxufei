@@ -1,12 +1,12 @@
 /* ============================================================
  * 逐合约真实保证金（交易所官方结算参数，脚本自动生成，勿手改）
- * 数据来源：上期所 20261111；能源中心 20261111；郑商所 20261110；广期所 latest；中金所 20261019
+ * 数据来源：上期所 20261112；能源中心 20261112；郑商所 20261112；广期所 latest；中金所 20261019
  * 由 update-margins.js 自动生成（GitHub Actions 每日定时更新）。
  * 字段：m=投机保证金%, h=套保保证金%, fee=手续费, feeType=fixed|rate, feeToday=平今手续费
  * 说明：标注“沿用”的交易所表示本次抓取失败，保留上一次成功数据；大商所由九期网数据补全。
  * ============================================================ */
-var MARGIN_LIVE_DATE = "2026-11-11";
-var MARGIN_LIVE_SOURCES = ["上期所 20261111","能源中心 20261111","郑商所 20261110","广期所 latest","中金所 20261019"];
+var MARGIN_LIVE_DATE = "2026-11-12";
+var MARGIN_LIVE_SOURCES = ["上期所 20261112","能源中心 20261112","郑商所 20261112","广期所 latest","中金所 20261019"];
 var MARGIN_LIVE = {
   "ad2611": {m: 20, h: 20},
   "ad2612": {m: 10, h: 10},
@@ -348,9 +348,9 @@ var MARGIN_LIVE = {
   "pl611": {m: 20, fee: 3, feeType: "fixed", feeToday: 0},
   "pl612": {m: 7, fee: 3, feeType: "fixed", feeToday: 0},
   "pl701": {m: 7, fee: 3, feeType: "fixed", feeToday: 0},
-  "pl702": {m: 11, fee: 3, feeType: "fixed", feeToday: 0},
-  "pl703": {m: 11, fee: 3, feeType: "fixed", feeToday: 0},
-  "pl704": {m: 11, fee: 3, feeType: "fixed", feeToday: 0},
+  "pl702": {m: 7, fee: 3, feeType: "fixed", feeToday: 0},
+  "pl703": {m: 7, fee: 3, feeType: "fixed", feeToday: 0},
+  "pl704": {m: 7, fee: 3, feeType: "fixed", feeToday: 0},
   "pl705": {m: 7, fee: 3, feeType: "fixed", feeToday: 0},
   "pl706": {m: 7, fee: 3, feeType: "fixed", feeToday: 0},
   "pl707": {m: 7, fee: 3, feeType: "fixed", feeToday: 0},
@@ -538,6 +538,10 @@ var MARGIN_LIVE = {
   "sn2708": {m: 13, h: 12},
   "sn2709": {m: 13, h: 12},
   "sn2710": {m: 13, h: 12},
+  "so705": {m: 8, fee: 1, feeType: "rate", feeToday: 1},
+  "so707": {m: 8, fee: 1, feeType: "rate", feeToday: 1},
+  "so709": {m: 8, fee: 1, feeType: "rate", feeToday: 1},
+  "so711": {m: 8, fee: 1, feeType: "rate", feeToday: 1},
   "sp2611": {m: 20, h: 20},
   "sp2612": {m: 10, h: 10},
   "sp2701": {m: 7, h: 6},
